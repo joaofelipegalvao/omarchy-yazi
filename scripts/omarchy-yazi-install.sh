@@ -16,7 +16,6 @@ readonly THEMES_DIR="$OMARCHY_DIR/themes"
 QUIET=0
 FORCE=0
 
-# Colors
 readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
 readonly YELLOW='\033[1;33m'
@@ -69,13 +68,11 @@ check_deps() {
 }
 
 install_plugin() {
-  # Detectar se está rodando do diretório local (modo dev)
   local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
   if [[ -f "$script_dir/scripts/omarchy-yazi-install.sh" ]]; then
     log "Running in development mode (local directory)"
 
-    # Usar diretório local como fonte
     mkdir -p "$(dirname "$INSTALL_DIR")"
 
     if [[ "$script_dir" != "$INSTALL_DIR" ]]; then
@@ -89,7 +86,6 @@ install_plugin() {
     return 0
   fi
 
-  # Modo produção: clonar do GitHub
   mkdir -p "$(dirname "$INSTALL_DIR")"
 
   if [[ -d "$INSTALL_DIR/.git" ]]; then
@@ -113,7 +109,6 @@ install_plugin() {
 install_hook() {
   mkdir -p "$(dirname "$HOOK_SCRIPT")"
 
-  # Copy hook script
   cp "$INSTALL_DIR/scripts/omarchy-yazi-hook" "$HOOK_SCRIPT"
   chmod +x "$HOOK_SCRIPT"
 
@@ -135,26 +130,6 @@ install_hook() {
   fi
 }
 
-detect_theme_variant() {
-  local theme="$1"
-  local variant=""
-
-  case "$theme" in
-  catppuccin-latte) variant="latte" ;;
-  catppuccin) variant="macchiato" ;;
-  rose-pine) variant="dawn" ;;
-  tokyo-night) variant="night" ;;
-  everforest*) variant="dark-hard" ;;
-  gruvbox*) variant="dark" ;;
-  kanagawa*) variant="wave" ;;
-  osaka*) variant="jade" ;;
-  flexoki*) variant="light" ;;
-  *) variant="$theme" ;;
-  esac
-
-  echo "$variant"
-}
-
 generate_theme_configs() {
   if [[ ! -d "$THEMES_DIR" ]]; then
     warn "Themes dir not found at $THEMES_DIR"
@@ -167,16 +142,24 @@ generate_theme_configs() {
     [[ ! -d "$theme_dir" ]] && continue
 
     local theme_name=$(basename "$theme_dir")
-    local yazi_file="$theme_dir/theme.toml"
+    local yazi_file="$theme_dir/theme-yazi.toml"
 
     [[ -f "$yazi_file" ]] && continue
 
-    local variant=$(detect_theme_variant "$theme_name")
-    local source_theme="$INSTALL_DIR/themes/$variant/theme.toml"
+    local source_theme="$INSTALL_DIR/themes/$theme_name/theme.toml"
 
+    # Se não encontrar o tema exato, tentar encontrar uma variante
     if [[ ! -f "$source_theme" ]]; then
-      warn "No Yazi theme found for: $theme_name (variant: $variant)"
-      continue
+      # Procurar por temas que começam com o mesmo nome
+      local variant_theme=$(find "$INSTALL_DIR/themes" -maxdepth 1 -type d -name "${theme_name}*" | head -n1)
+
+      if [[ -n "$variant_theme" ]] && [[ -f "$variant_theme/theme.toml" ]]; then
+        source_theme="$variant_theme/theme.toml"
+        log "Using variant $(basename "$variant_theme") for $theme_name"
+      else
+        warn "No Yazi theme found for: $theme_name"
+        continue
+      fi
     fi
 
     cp "$source_theme" "$yazi_file"
@@ -193,14 +176,22 @@ generate_theme_configs() {
 configure_yazi() {
   mkdir -p "$(dirname "$YAZI_CONF")"
 
-  local current_theme=$(basename "$(dirname "$OMARCHY_DIR/current/theme")" 2>/dev/null || echo "tokyo-night")
-  local theme_file="$THEMES_DIR/$current_theme/theme.toml"
+  local current_theme_file="$OMARCHY_DIR/current/theme/theme-yazi.toml"
 
-  if [[ -f "$theme_file" ]]; then
-    ln -sf "$theme_file" "$YAZI_CONF"
+  if [[ -f "$current_theme_file" ]]; then
+    ln -sf "$current_theme_file" "$YAZI_CONF"
     log "Linked current Omarchy theme to Yazi"
   else
-    warn "Current theme file not found, skipping initial link"
+
+    local current_theme=$(basename "$(dirname "$OMARCHY_DIR/current/theme")" 2>/dev/null || echo "tokyo-night")
+    local theme_file="$THEMES_DIR/$current_theme/theme-yazi.toml"
+
+    if [[ -f "$theme_file" ]]; then
+      ln -sf "$theme_file" "$YAZI_CONF"
+      log "Linked current Omarchy theme to Yazi"
+    else
+      warn "Current theme file not found, skipping initial link"
+    fi
   fi
 }
 
