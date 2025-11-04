@@ -1,0 +1,45 @@
+#!/bin/bash
+# Omarchy Yazi Theme Hook
+# Automatically syncs Yazi theme when Omarchy theme changes
+
+set -euo pipefail
+
+readonly THEME="${1:-}"
+readonly THEME_DIR="$HOME/.config/omarchy/themes/$THEME"
+readonly THEME_YAZI="$THEME_DIR/theme.toml"
+readonly YAZI_CONF="$HOME/.config/yazi/theme.toml"
+readonly YAZI_STATE="$HOME/.local/state/yazi"
+
+# Logging functions
+log() { echo "[omarchy-yazi] $*" >&2; }
+error() {
+  echo "[omarchy-yazi] ERROR: $*" >&2
+  exit 1
+}
+
+# Validate theme argument
+[[ -z "$THEME" ]] && error "No theme specified"
+
+# Validate theme file exists
+[[ ! -f "$THEME_YAZI" ]] && error "Theme file not found: $THEME_YAZI"
+
+# Create backup of current theme (if exists)
+if [[ -f "$YAZI_CONF" ]] && [[ ! -L "$YAZI_CONF" ]]; then
+  cp "$YAZI_CONF" "$YAZI_CONF.backup.$(date +%Y%m%d_%H%M%S)"
+  log "Backed up existing theme configuration"
+fi
+
+# Create symlink to new theme
+ln -sf "$THEME_YAZI" "$YAZI_CONF" || error "Failed to create symlink"
+log "Linked theme: $THEME"
+
+# Clean Yazi cache to force theme reload
+if [[ -d "$YAZI_STATE" ]]; then
+  rm -rf "$YAZI_STATE"
+  log "Cleared Yazi state cache"
+fi
+
+# Remove any orphaned theme files (from previous manual installations)
+find "$HOME/.config/yazi" -maxdepth 1 -name "theme.toml-*" -type f -delete 2>/dev/null || true
+
+log "Theme switch complete: $THEME"
