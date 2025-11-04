@@ -1,0 +1,166 @@
+# Matte Black Theme for Yazi
+# Based on: https://github.com/tahayvr/matteblack.nvim
+# ---
+# bg           "#121212"
+# bg_dark      "#0d0d0d"
+# bg_highlight "#1e1e1e"
+# bg2          "#2c2c2c"
+# bg3          "#333333"
+# fg           "#eaeaea"
+# fg_dark      "#bebebe"
+# comment      "#8a8a8d"
+# red          "#b91c1c"
+# orange       "#f59e0b"
+# yellow       "#fbbf24"
+# gold         "#efbf04"
+# ochre        "#bf9903"
+# pink         "#f87171"
+# magenta      "#dc2626"
+# gray         "#5c6370"
+# gray1        "#a3a3a3"
+# gray2        "#737373"
+
+[mgr]
+cwd = { fg = "#eaeaea", bold = true }
+
+# Hovered
+hovered = { bg = "#1e1e1e" }
+preview_hovered = { underline = true }
+
+# Find
+find_keyword = { fg = "#fbbf24", reversed = true }
+find_position = { fg = "#8a8a8d", bold = true, italic = true }
+
+# Marker
+marker_copied = { fg = "#efbf04", bg = "#efbf04" }
+marker_cut = { fg = "#b91c1c", bg = "#b91c1c" }
+marker_marked = { fg = "#f59e0b", bg = "#f59e0b" }
+marker_selected = { fg = "#d97706", bg = "#d97706" }
+
+# Count
+count_copied = { fg = "#efbf04", bold = true, reversed = true }
+count_cut = { fg = "#b91c1c", bold = true, reversed = true }
+count_selected = { fg = "#d97706", bold = true, reversed = true }
+
+# Border
+border_symbol = "│"
+border_style = { fg = "#2c2c2c" }
+
+[tabs]
+active = { fg = "#eaeaea", bg = "#333333", bold = true }
+inactive = { fg = "#8a8a8d", bg = "#1e1e1e" }
+sep_inner = { open = "", close = "" }
+sep_outer = { open = "", close = "" }
+
+[mode]
+# Normal mode
+normal_main = { fg = "#eaeaea", bg = "#333333", bold = true }
+normal_alt = { fg = "#8a8a8d", bg = "#1e1e1e" }
+
+# Select mode
+select_main = { fg = "#121212", bg = "#d97706", bold = true }
+select_alt = { fg = "#d97706", bg = "#2c2c2c" }
+
+# Unset mode
+unset_main = { fg = "#121212", bg = "#d97706", bold = true }
+unset_alt = { fg = "#d97706", bg = "#2c2c2c" }
+
+[status]
+overall = { fg = "#eaeaea" }
+
+# Permissions
+perm_type = { fg = "#a3a3a3" }
+perm_read = { fg = "#fbbf24" }
+perm_write = { fg = "#b91c1c" }
+perm_exec = { fg = "#efbf04" }
+perm_sep = { fg = "#8a8a8d" }
+
+# Progress
+progress_label = { fg = "#121212" }
+progress_normal = { fg = "#d97706", bg = "#f59e0b" }
+progress_error = { bg = "#b91c1c" }
+
+[which]
+cols = 3
+mask = { bg = "#1e1e1e" }
+cand = { fg = "#fbbf24", bold = true }
+rest = { fg = "#fbbf24", italic = true }
+desc = { fg = "#8a8a8d" }
+separator = " "
+separator_style = { }
+
+[confirm]
+border = { fg = "#333333" }
+title = { fg = "#8a8a8d", bold = true }
+content = { fg = "#eaeaea", bold = true }
+list = { fg = "#eaeaea" }
+btn_yes = { fg = "#eaeaea", bg = "#333333", bold = true }
+btn_no = { fg = "#8a8a8d", bg = "#1e1e1e" }
+
+[spot]
+border = { fg = "#333333" }
+title = { fg = "#8a8a8d", bold = true }
+tbl_col = { fg = "#8a8a8d" }
+tbl_cell = { bg = "#1e1e1e" }
+
+[notify]
+# Notification title
+title_info = { fg = "#a3a3a3" }
+title_warn = { fg = "#f59e0b" }
+title_error = { fg = "#b91c1c" }
+
+[pick]
+border = { fg = "#333333", bold = true }
+active = { fg = "#eaeaea" }
+inactive = { fg = "#8a8a8d" }
+
+[input]
+border = { fg = "#333333" }
+title = { fg = "#8a8a8d", bold = true }
+value = { fg = "#eaeaea" }
+selected = { bg = "#1e1e1e" }
+
+[cmp]
+border = { fg = "#333333", bold = true }
+active = { fg = "#8a8a8d", bg = "#1e1e1e" }
+inactive = { fg = "#8a8a8d" }
+
+[tasks]
+border = { fg = "#333333" }
+title = { fg = "#8a8a8d", bold = true }
+hovered = { bg = "#1e1e1e" }
+
+[help]
+on = { fg = "#a3a3a3" }
+run = { fg = "#d97706" }
+desc = { fg = "#8a8a8d", italic = true }
+hovered = { bg = "#1e1e1e" }
+footer = { fg = "#eaeaea", bg = "#1e1e1e", bold = true }
+
+[filetype]
+rules = [
+  # Images
+  { mime = "image/*", fg = "#dc2626" },
+
+  # Media
+  { mime = "video/*", fg = "#fbbf24" },
+  { mime = "audio/*", fg = "#fbbf24" },
+
+  # Broken symbolic link
+  { name = "*", is = "orphan", fg = "#8a8a8d", crossed = true },
+  { name = "*/", is = "orphan", fg = "#8a8a8d", crossed = true },
+
+  # Symbolic links
+  { name = "*", is = "link", fg = "#d97706" },
+  { name = "*/", is = "link", fg = "#d97706" },
+
+  # Executable
+  { name = "*", is = "exec", fg = "#efbf04" },
+
+  # Empty files
+  { mime = "inode/empty", fg = "#8a8a8d" },
+
+  # Fallback
+  { name = "*", fg = "#bebebe" },
+  { name = "*/", fg = "#eaeaea" }
+]

@@ -1,0 +1,169 @@
+# Osaka Jade Theme for Yazi
+# Based on: https://github.com/craftzdog/dotfiles-public
+# ---
+# bg             "#111c18"
+# bg_dark        "#0d1512"
+# bg_highlight   "#23372B"
+# fg             "#C1C497"
+# fg_dark        "#a8af7e"
+# fg_bright      "#F6F5DD"
+# cursor         "#D7C995"
+# black          "#23372B"
+# red            "#FF5345"
+# green          "#549e6a"
+# yellow         "#459451"
+# blue           "#509475"
+# magenta        "#D2689C"
+# cyan           "#2DD5B7"
+# white          "#F6F5DD"
+# bright_yellow  "#E5C736"
+# bright_cyan    "#8CD3CB"
+# jade           "#2DD5B7"
+# lime           "#549e6a"
+# olive          "#459451"
+# pink           "#D2689C"
+
+[mgr]
+cwd = { fg = "#C1C497", bold = true }
+
+# Hovered
+hovered = { bg = "#23372B" }
+preview_hovered = { underline = true }
+
+# Find
+find_keyword = { fg = "#E5C736", reversed = true }
+find_position = { fg = "#53685B", bold = true, italic = true }
+
+# Marker
+marker_copied = { fg = "#549e6a", bg = "#549e6a" }
+marker_cut = { fg = "#FF5345", bg = "#FF5345" }
+marker_marked = { fg = "#2DD5B7", bg = "#2DD5B7" }
+marker_selected = { fg = "#8CD3CB", bg = "#8CD3CB" }
+
+# Count
+count_copied = { fg = "#549e6a", bold = true, reversed = true }
+count_cut = { fg = "#FF5345", bold = true, reversed = true }
+count_selected = { fg = "#2DD5B7", bold = true, reversed = true }
+
+# Border
+border_symbol = "│"
+border_style = { fg = "#23372B" }
+
+[tabs]
+active = { fg = "#C1C497", bg = "#23372B", bold = true }
+inactive = { fg = "#53685B", bg = "#0d1512" }
+sep_inner = { open = "", close = "" }
+sep_outer = { open = "", close = "" }
+
+[mode]
+# Normal mode
+normal_main = { fg = "#C1C497", bg = "#23372B", bold = true }
+normal_alt = { fg = "#53685B", bg = "#0d1512" }
+
+# Select mode
+select_main = { fg = "#111c18", bg = "#2DD5B7", bold = true }
+select_alt = { fg = "#2DD5B7", bg = "#23372B" }
+
+# Unset mode
+unset_main = { fg = "#111c18", bg = "#2DD5B7", bold = true }
+unset_alt = { fg = "#2DD5B7", bg = "#23372B" }
+
+[status]
+overall = { fg = "#C1C497" }
+
+# Permissions
+perm_type = { fg = "#509475" }
+perm_read = { fg = "#E5C736" }
+perm_write = { fg = "#FF5345" }
+perm_exec = { fg = "#549e6a" }
+perm_sep = { fg = "#53685B" }
+
+# Progress
+progress_label = { fg = "#111c18" }
+progress_normal = { fg = "#2DD5B7", bg = "#8CD3CB" }
+progress_error = { bg = "#FF5345" }
+
+[which]
+cols = 3
+mask = { bg = "#23372B" }
+cand = { fg = "#E5C736", bold = true }
+rest = { fg = "#E5C736", italic = true }
+desc = { fg = "#53685B" }
+separator = " "
+separator_style = { }
+
+[confirm]
+border = { fg = "#23372B" }
+title = { fg = "#53685B", bold = true }
+content = { fg = "#C1C497", bold = true }
+list = { fg = "#C1C497" }
+btn_yes = { fg = "#C1C497", bg = "#23372B", bold = true }
+btn_no = { fg = "#53685B", bg = "#0d1512" }
+
+[spot]
+border = { fg = "#23372B" }
+title = { fg = "#53685B", bold = true }
+tbl_col = { fg = "#53685B" }
+tbl_cell = { bg = "#23372B" }
+
+[notify]
+# Notification title
+title_info = { fg = "#509475" }
+title_warn = { fg = "#E5C736" }
+title_error = { fg = "#FF5345" }
+
+[pick]
+border = { fg = "#23372B", bold = true }
+active = { fg = "#C1C497" }
+inactive = { fg = "#53685B" }
+
+[input]
+border = { fg = "#23372B" }
+title = { fg = "#53685B", bold = true }
+value = { fg = "#C1C497" }
+selected = { bg = "#23372B" }
+
+[cmp]
+border = { fg = "#23372B", bold = true }
+active = { fg = "#53685B", bg = "#23372B" }
+inactive = { fg = "#53685B" }
+
+[tasks]
+border = { fg = "#23372B" }
+title = { fg = "#53685B", bold = true }
+hovered = { bg = "#23372B" }
+
+[help]
+on = { fg = "#509475" }
+run = { fg = "#2DD5B7" }
+desc = { fg = "#53685B", italic = true }
+hovered = { bg = "#23372B" }
+footer = { fg = "#C1C497", bg = "#0d1512", bold = true }
+
+[filetype]
+rules = [
+  # Images
+  { mime = "image/*", fg = "#D2689C" },
+
+  # Media
+  { mime = "video/*", fg = "#E5C736" },
+  { mime = "audio/*", fg = "#E5C736" },
+
+  # Broken symbolic link
+  { name = "*", is = "orphan", fg = "#53685B", crossed = true },
+  { name = "*/", is = "orphan", fg = "#53685B", crossed = true },
+
+  # Symbolic links
+  { name = "*", is = "link", fg = "#2DD5B7" },
+  { name = "*/", is = "link", fg = "#2DD5B7" },
+
+  # Executable
+  { name = "*", is = "exec", fg = "#549e6a" },
+
+  # Empty files
+  { mime = "inode/empty", fg = "#53685B" },
+
+  # Fallback
+  { name = "*", fg = "#a8af7e" },
+  { name = "*/", fg = "#C1C497" }
+]

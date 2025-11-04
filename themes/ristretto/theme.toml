@@ -1,0 +1,173 @@
+# Ristretto Theme for Yazi
+# A warm, coffee-inspired color scheme
+# ---
+# bg             "#2c2525"
+# bg_dark        "#221f1f"
+# bg_highlight   "#403e41"
+# bg2            "#595959"
+# bg3            "#404040"
+# terminal_black "#72696a"
+# fg             "#e6d9db"
+# fg_dark        "#c3b7b8"
+# comment        "#948a8b"
+# red            "#fd6883"
+# red1           "#ff8297"
+# orange         "#f38d70"
+# amber          "#f8a788"
+# yellow         "#f9cc6c"
+# gold           "#fcd675"
+# pink           "#fd6883"
+# magenta        "#ff8297"
+# blue           "#a8a9eb"
+# cyan           "#85dacc"
+# blue1          "#9bf1e1"
+# blue2          "#bebffd"
+# purple         "#a8a9eb"
+# green          "#adda78"
+# green1         "#c8e292"
+# teal           "#85dacc"
+
+[mgr]
+cwd = { fg = "#e6d9db", bold = true }
+
+# Hovered
+hovered = { bg = "#403e41" }
+preview_hovered = { underline = true }
+
+# Find
+find_keyword = { fg = "#fcd675", reversed = true }
+find_position = { fg = "#948a8b", bold = true, italic = true }
+
+# Marker
+marker_copied = { fg = "#adda78", bg = "#adda78" }
+marker_cut = { fg = "#fd6883", bg = "#fd6883" }
+marker_marked = { fg = "#f38d70", bg = "#f38d70" }
+marker_selected = { fg = "#85dacc", bg = "#85dacc" }
+
+# Count
+count_copied = { fg = "#adda78", bold = true, reversed = true }
+count_cut = { fg = "#fd6883", bold = true, reversed = true }
+count_selected = { fg = "#85dacc", bold = true, reversed = true }
+
+# Border
+border_symbol = "│"
+border_style = { fg = "#403e41" }
+
+[tabs]
+active = { fg = "#e6d9db", bg = "#404040", bold = true }
+inactive = { fg = "#948a8b", bg = "#221f1f" }
+sep_inner = { open = "", close = "" }
+sep_outer = { open = "", close = "" }
+
+[mode]
+# Normal mode
+normal_main = { fg = "#e6d9db", bg = "#404040", bold = true }
+normal_alt = { fg = "#948a8b", bg = "#221f1f" }
+
+# Select mode
+select_main = { fg = "#2c2525", bg = "#85dacc", bold = true }
+select_alt = { fg = "#85dacc", bg = "#403e41" }
+
+# Unset mode
+unset_main = { fg = "#2c2525", bg = "#85dacc", bold = true }
+unset_alt = { fg = "#85dacc", bg = "#403e41" }
+
+[status]
+overall = { fg = "#e6d9db" }
+
+# Permissions
+perm_type = { fg = "#a8a9eb" }
+perm_read = { fg = "#f9cc6c" }
+perm_write = { fg = "#fd6883" }
+perm_exec = { fg = "#adda78" }
+perm_sep = { fg = "#948a8b" }
+
+# Progress
+progress_label = { fg = "#2c2525" }
+progress_normal = { fg = "#85dacc", bg = "#9bf1e1" }
+progress_error = { bg = "#fd6883" }
+
+[which]
+cols = 3
+mask = { bg = "#403e41" }
+cand = { fg = "#fcd675", bold = true }
+rest = { fg = "#fcd675", italic = true }
+desc = { fg = "#948a8b" }
+separator = " "
+separator_style = { }
+
+[confirm]
+border = { fg = "#404040" }
+title = { fg = "#948a8b", bold = true }
+content = { fg = "#e6d9db", bold = true }
+list = { fg = "#e6d9db" }
+btn_yes = { fg = "#e6d9db", bg = "#404040", bold = true }
+btn_no = { fg = "#948a8b", bg = "#221f1f" }
+
+[spot]
+border = { fg = "#404040" }
+title = { fg = "#948a8b", bold = true }
+tbl_col = { fg = "#948a8b" }
+tbl_cell = { bg = "#403e41" }
+
+[notify]
+# Notification title
+title_info = { fg = "#a8a9eb" }
+title_warn = { fg = "#f38d70" }
+title_error = { fg = "#fd6883" }
+
+[pick]
+border = { fg = "#404040", bold = true }
+active = { fg = "#e6d9db" }
+inactive = { fg = "#948a8b" }
+
+[input]
+border = { fg = "#404040" }
+title = { fg = "#948a8b", bold = true }
+value = { fg = "#e6d9db" }
+selected = { bg = "#403e41" }
+
+[cmp]
+border = { fg = "#404040", bold = true }
+active = { fg = "#948a8b", bg = "#403e41" }
+inactive = { fg = "#948a8b" }
+
+[tasks]
+border = { fg = "#404040" }
+title = { fg = "#948a8b", bold = true }
+hovered = { bg = "#403e41" }
+
+[help]
+on = { fg = "#a8a9eb" }
+run = { fg = "#85dacc" }
+desc = { fg = "#948a8b", italic = true }
+hovered = { bg = "#403e41" }
+footer = { fg = "#e6d9db", bg = "#221f1f", bold = true }
+
+[filetype]
+rules = [
+  # Images
+  { mime = "image/*", fg = "#ff8297" },
+
+  # Media
+  { mime = "video/*", fg = "#f9cc6c" },
+  { mime = "audio/*", fg = "#f9cc6c" },
+
+  # Broken symbolic link
+  { name = "*", is = "orphan", fg = "#948a8b", crossed = true },
+  { name = "*/", is = "orphan", fg = "#948a8b", crossed = true },
+
+  # Symbolic links
+  { name = "*", is = "link", fg = "#85dacc" },
+  { name = "*/", is = "link", fg = "#85dacc" },
+
+  # Executable
+  { name = "*", is = "exec", fg = "#adda78" },
+
+  # Empty files
+  { mime = "inode/empty", fg = "#948a8b" },
+
+  # Fallback
+  { name = "*", fg = "#c3b7b8" },
+  { name = "*/", fg = "#e6d9db" }
+]
