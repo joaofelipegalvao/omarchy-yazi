@@ -73,7 +73,6 @@ remove_hook() {
     rm -f "$HOOK_SCRIPT"
   fi
 
-  # Remove hook from Omarchy theme-set file
   if [[ -f "$HOOK_FILE" ]]; then
     if grep -q 'omarchy-yazi-hook' "$HOOK_FILE"; then
       log "Removing hook from Omarchy configuration..."
@@ -94,7 +93,6 @@ clean_yazi_conf() {
     return
   fi
 
-  # Check if it's a symlink to our themes
   if [[ -L "$YAZI_CONF" ]]; then
     local link_target=$(readlink "$YAZI_CONF")
     if [[ "$link_target" == *"/omarchy/themes/"* ]]; then
@@ -114,7 +112,6 @@ clean_yazi_conf() {
     info "Yazi theme.toml is not a symlink, keeping it."
   fi
 
-  # Clean backup files
   find "$(dirname "$YAZI_CONF")" -maxdepth 1 -name "theme.toml.backup.*" -type f -delete 2>/dev/null || true
 }
 
@@ -135,17 +132,14 @@ remove_theme_configs() {
     [[ ! -d "$theme_dir" ]] && continue
 
     local theme_name=$(basename "$theme_dir")
-    local yazi_file="$theme_dir/theme.toml"
+    local yazi_file="$theme_dir/theme-yazi.toml" # CORRIGIDO: era theme.toml
 
     if [[ -f "$yazi_file" ]]; then
-      # Verify it's one of our generated files (check for Omarchy comment or similar)
-      if grep -q "# Omarchy Yazi" "$yazi_file" 2>/dev/null || [[ $FORCE -eq 1 ]]; then
-        if [[ $QUIET -eq 0 ]]; then
-          log "Removing config: $theme_name/theme.toml"
-        fi
-        rm -f "$yazi_file"
-        ((count++)) || true
+      if [[ $QUIET -eq 0 ]]; then
+        log "Removing config: $theme_name/theme-yazi.toml"
       fi
+      rm -f "$yazi_file"
+      ((count++)) || true
     fi
   done
 
@@ -183,7 +177,7 @@ show_summary() {
 
   if [[ $KEEP_CONFIGS -eq 0 ]]; then
     echo -e "\n  Theme configs were removed from:"
-    echo -e "    ${CYAN}~/.config/omarchy/themes/*/theme.toml${NC}"
+    echo -e "    ${CYAN}~/.config/omarchy/themes/*/theme-yazi.toml${NC}"
   fi
 }
 
