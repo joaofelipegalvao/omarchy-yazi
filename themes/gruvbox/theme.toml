@@ -1,5 +1,3 @@
-# vim:fileencoding=utf-8:foldmethod=marker
-
 # : Manager {{{
 
 [manager]
@@ -51,9 +49,9 @@ unset_alt = { fg = "#a89984", bg = "#504945" }
 # : Status {{{
 
 [status]
-sep_left = { open = "\ue0be", close = "\ue0b8" }
-sep_right = { open = "\ue0be", close = "\ue0b8" }
-overall = { }
+sep_inner = { open = "", close = "" }
+sep_outer = { open = "", close = "" }
+overall = {}
 
 # Progress
 progress_label = { fg = "#ebdbb2", bold = true }
@@ -162,7 +160,7 @@ body = { fg = "red" }
 list = { fg = "#ebdbb2" }
 btn_yes = { reversed = true, fg = "#ebdbb2" }
 btn_no = {}
-btn_labels = [ "  [Y]es  ", "  (N)o  " ]
+btn_labels = ["  [Y]es  ", "  (N)o  "]
 
 # : }}}
 

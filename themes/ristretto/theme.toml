@@ -1,32 +1,3 @@
-# Ristretto Theme for Yazi
-# A warm, coffee-inspired color scheme
-# ---
-# bg             "#2c2525"
-# bg_dark        "#221f1f"
-# bg_highlight   "#403e41"
-# bg2            "#595959"
-# bg3            "#404040"
-# terminal_black "#72696a"
-# fg             "#e6d9db"
-# fg_dark        "#c3b7b8"
-# comment        "#948a8b"
-# red            "#fd6883"
-# red1           "#ff8297"
-# orange         "#f38d70"
-# amber          "#f8a788"
-# yellow         "#f9cc6c"
-# gold           "#fcd675"
-# pink           "#fd6883"
-# magenta        "#ff8297"
-# blue           "#a8a9eb"
-# cyan           "#85dacc"
-# blue1          "#9bf1e1"
-# blue2          "#bebffd"
-# purple         "#a8a9eb"
-# green          "#adda78"
-# green1         "#c8e292"
-# teal           "#85dacc"
-
 [mgr]
 cwd = { fg = "#e6d9db", bold = true }
 
@@ -54,15 +25,13 @@ border_symbol = "│"
 border_style = { fg = "#403e41" }
 
 [tabs]
-active = { fg = "#e6d9db", bg = "#404040", bold = true }
-inactive = { fg = "#948a8b", bg = "#221f1f" }
-sep_inner = { open = "", close = "" }
-sep_outer = { open = "", close = "" }
+active = { fg = "#221f1f", bg = "#fd6883", bold = true }
+inactive = { fg = "#fd6883", bg = "#221f1f" }
 
 [mode]
 # Normal mode
-normal_main = { fg = "#e6d9db", bg = "#404040", bold = true }
-normal_alt = { fg = "#948a8b", bg = "#221f1f" }
+normal_main = { fg = "#221f1f", bg = "#fd6883", bold = true }
+normal_alt = { fg = "#fd6883", bg = "#221f1f" }
 
 # Select mode
 select_main = { fg = "#2c2525", bg = "#85dacc", bold = true }
@@ -94,7 +63,7 @@ cand = { fg = "#fcd675", bold = true }
 rest = { fg = "#fcd675", italic = true }
 desc = { fg = "#948a8b" }
 separator = " "
-separator_style = { }
+separator_style = {}
 
 [confirm]
 border = { fg = "#404040" }
@@ -169,5 +138,5 @@ rules = [
 
   # Fallback
   { name = "*", fg = "#c3b7b8" },
-  { name = "*/", fg = "#e6d9db" }
+  { name = "*/", fg = "#e6d9db" },
 ]

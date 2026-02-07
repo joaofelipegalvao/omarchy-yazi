@@ -1,10 +1,10 @@
 # Installation Guide
 
-This document explains all installation methods for **Omarchy Yazi**.
+This document explains all installation methods for **Omarchy Yazi v2.0**.
 
 ## Requirements
 
-- [Omarchy](https://omarchy.org) (version 3.1+)
+- [Omarchy](https://omarchy.org) (version 3.3+ recommended, 3.1+ minimum)
 - [Yazi](https://github.com/sxyazi/yazi)
 - `git`
 
@@ -26,14 +26,16 @@ bash ~/.local/share/omarchy-yazi/scripts/omarchy-yazi-install.sh
 ### 1. Install Dependencies
 
 #### Arch Linux
+
 ```bash
 sudo pacman -S yazi git
 ```
 
 #### Other distributions
+
 Follow [Yazi's installation guide](https://github.com/sxyazi/yazi#installation)
 
-### 2. Clone the plugin
+### 2. Clone the repository
 
 ```bash
 git clone https://github.com/joaofelipegalvao/omarchy-yazi ~/.local/share/omarchy-yazi
@@ -46,10 +48,13 @@ bash ~/.local/share/omarchy-yazi/scripts/omarchy-yazi-install.sh
 ```
 
 The installer will:
-- ✅ Check for Omarchy installation
-- ✅ Copy theme configurations for all your themes
-- ✅ Install the hook script
-- ✅ Create initial symlink to current theme
+
+- ✅ Check for Omarchy installation (3.3+ required)
+- ✅ Clone/update theme template repository
+- ✅ Create generator and reload scripts
+- ✅ Generate profile for your current theme
+- ✅ Install Omarchy hook
+- ✅ Create symlink to active theme
 
 ### 4. Restart Yazi
 
@@ -72,7 +77,7 @@ bash ~/.local/share/omarchy-yazi/scripts/omarchy-yazi-install.sh --quiet
 
 ### Force Reinstall
 
-Force reinstall even if already installed:
+Force reinstall even if already installed (regenerates scripts, preserves profiles):
 
 ```bash
 bash ~/.local/share/omarchy-yazi/scripts/omarchy-yazi-install.sh --force
@@ -86,17 +91,35 @@ bash ~/.local/share/omarchy-yazi/scripts/omarchy-yazi-install.sh --version
 
 ## Verify Installation
 
-### Check plugin files
+### Check template repository
 
 ```bash
 ls -la ~/.local/share/omarchy-yazi/
 ```
 
-### Check theme configs
+Should show:
+
+```
+drwxr-xr-x themes/
+drwxr-xr-x scripts/
+drwxr-xr-x .git/
+```
+
+### Check generator script
 
 ```bash
-ls -la ~/.config/omarchy/themes/*/theme-yazi.toml
+ls -la ~/.local/bin/omarchy-yazi-generator
 ```
+
+Should be executable.
+
+### Check reload script
+
+```bash
+ls -la ~/.local/bin/omarchy-yazi-reload
+```
+
+Should be executable.
 
 ### Check hook installation
 
@@ -105,8 +128,9 @@ cat ~/.config/omarchy/hooks/theme-set
 ```
 
 Should contain:
+
 ```bash
-/home/YOUR_USERNAME/.local/bin/omarchy-yazi-hook $1
+/home/YOUR_USERNAME/.local/bin/omarchy-yazi-reload
 ```
 
 ### Check active theme
@@ -115,17 +139,43 @@ Should contain:
 ls -la ~/.config/yazi/theme.toml
 ```
 
-Should be a symlink pointing to your current Omarchy theme.
+Should be a symlink pointing to `~/.config/yazi/omarchy-themes/THEME.toml`
+
+### Check theme profile
+
+```bash
+# Get current theme
+current_theme=$(cat ~/.config/omarchy/current/theme.name 2>/dev/null || echo "unknown")
+
+# Check profile exists
+ls -la ~/.config/yazi/omarchy-themes/$current_theme.toml
+```
 
 ## Post-Installation
 
 ### Test Theme Switching
 
 1. Change Omarchy theme with `Super + Ctrl + Shift + Space`
-2. Restart Yazi: `killall yazi && yazi`
-3. Theme should match your new Omarchy theme
+2. Check symlink updated: `readlink ~/.config/yazi/theme.toml`
+3. Restart Yazi: `killall yazi && yazi`
+4. Theme should match your new Omarchy theme
 
-### Update the Plugin
+### Customize Your Theme
+
+```bash
+# Get current theme
+current_theme=$(cat ~/.config/omarchy/current/theme.name)
+
+# Edit your persistent profile
+nvim ~/.config/yazi/omarchy-themes/$current_theme.toml
+
+# Restart Yazi
+killall yazi && yazi
+```
+
+**Your customizations will persist when you switch themes and return!**
+
+### Update the Repository
 
 To update to the latest version:
 
@@ -133,7 +183,11 @@ To update to the latest version:
 bash ~/.local/share/omarchy-yazi/scripts/omarchy-yazi-install.sh
 ```
 
-The installer will pull the latest changes from GitHub if the directory contains a git repository.
+The installer will:
+
+- Pull latest theme templates from GitHub
+- Update generator and reload scripts
+- **Never touch your existing profiles** - customizations safe!
 
 ## Uninstall
 
@@ -143,13 +197,15 @@ The installer will pull the latest changes from GitHub if the directory contains
 curl -fsSL https://raw.githubusercontent.com/joaofelipegalvao/omarchy-yazi/main/scripts/omarchy-yazi-uninstall.sh | bash
 ```
 
-### Keep Theme Configs
+### Keep Theme Profiles
 
-To remove the plugin but keep your theme configurations:
+To remove the repository but keep your customized theme profiles:
 
 ```bash
 bash ~/.local/share/omarchy-yazi/scripts/omarchy-yazi-uninstall.sh --keep-configs
 ```
+
+Your profiles remain in `~/.config/yazi/omarchy-themes/` for future reinstall.
 
 ### Force Uninstall (No Prompts)
 
@@ -165,17 +221,48 @@ If installation fails, see [Troubleshooting Guide](TROUBLESHOOTING.md).
 
 The installer creates/modifies:
 
-| Location | Purpose |
-|----------|---------|
-| `~/.local/share/omarchy-yazi/` | Plugin files and theme templates |
-| `~/.config/omarchy/themes/*/theme-yazi.toml` | Theme configs for each theme |
-| `~/.config/yazi/theme.toml` | Symlink to active theme |
-| `~/.local/bin/omarchy-yazi-hook` | Hook script for theme switching |
-| `~/.config/omarchy/hooks/theme-set` | Hook registration (modified) |
+| Location | Purpose | Editable? |
+|----------|---------|-----------|
+| `~/.local/share/omarchy-yazi/` | Template repository (git) | No |
+| `~/.local/share/omarchy-yazi/themes/` | Theme templates | No |
+| **`~/.config/yazi/omarchy-themes/`** | **Your persistent profiles** | **Yes!** |
+| `~/.config/yazi/theme.toml` | Symlink to active profile | Auto |
+| `~/.local/bin/omarchy-yazi-generator` | Profile generator script | No |
+| `~/.local/bin/omarchy-yazi-reload` | Reload script | No |
+| `~/.config/omarchy/hooks/theme-set` | Hook registration (modified) | No |
+
+## v2.0 Architecture
+
+### Directory Structure
+
+```
+~/.local/share/omarchy-yazi/         # Template repository
+├── themes/
+│   ├── tokyo-night/theme.toml       # Read-only template
+│   └── ...
+└── scripts/
+
+~/.config/yazi/
+├── omarchy-themes/                  # Your persistent profiles
+│   ├── tokyo-night.toml             # EDITABLE - Your customizations
+│   └── ...
+└── theme.toml → omarchy-themes/tokyo-night.toml  # Symlink
+
+~/.local/bin/
+├── omarchy-yazi-generator           # Creates profiles on-demand
+└── omarchy-yazi-reload              # Called by Omarchy hook
+```
+
+### Key Difference from v1.x
+
+**v1.x**: Themes in `~/.config/omarchy/themes/*/theme-yazi.toml` - lost on update ❌
+
+**v2.0**: Themes in `~/.config/yazi/omarchy-themes/*.toml` - persistent! ✅
 
 ## Notes
 
-- The plugin **does not modify** Omarchy's core files in `~/.local/share/omarchy`
+- The repository **does not modify** Omarchy's core files in `~/.local/share/omarchy`
 - All configurations are in user-editable locations (`~/.config`)
-- You can manually edit theme files in `~/.config/omarchy/themes/*/theme-yazi.toml`
-- Backups are automatically created before replacing existing configs
+- You can manually edit theme profiles in `~/.config/yazi/omarchy-themes/*.toml`
+- Your customizations **persist across theme switches** and **survive repository updates**
+- Updates only refresh templates in `~/.local/share/omarchy-yazi/themes/`

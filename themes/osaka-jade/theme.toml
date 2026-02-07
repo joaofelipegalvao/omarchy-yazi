@@ -1,28 +1,3 @@
-# Osaka Jade Theme for Yazi
-# Based on: https://github.com/craftzdog/dotfiles-public
-# ---
-# bg             "#111c18"
-# bg_dark        "#0d1512"
-# bg_highlight   "#23372B"
-# fg             "#C1C497"
-# fg_dark        "#a8af7e"
-# fg_bright      "#F6F5DD"
-# cursor         "#D7C995"
-# black          "#23372B"
-# red            "#FF5345"
-# green          "#549e6a"
-# yellow         "#459451"
-# blue           "#509475"
-# magenta        "#D2689C"
-# cyan           "#2DD5B7"
-# white          "#F6F5DD"
-# bright_yellow  "#E5C736"
-# bright_cyan    "#8CD3CB"
-# jade           "#2DD5B7"
-# lime           "#549e6a"
-# olive          "#459451"
-# pink           "#D2689C"
-
 [mgr]
 cwd = { fg = "#C1C497", bold = true }
 
@@ -51,13 +26,11 @@ border_style = { fg = "#23372B" }
 
 [tabs]
 active = { fg = "#C1C497", bg = "#23372B", bold = true }
-inactive = { fg = "#53685B", bg = "#0d1512" }
-sep_inner = { open = "", close = "" }
-sep_outer = { open = "", close = "" }
+inactive = { fg = "#23372B", bg = "#C1C497" }
 
 [mode]
 # Normal mode
-normal_main = { fg = "#C1C497", bg = "#23372B", bold = true }
+normal_main = { fg = "#C1C497", bg = "#549e6a", bold = true }
 normal_alt = { fg = "#53685B", bg = "#0d1512" }
 
 # Select mode
@@ -90,7 +63,7 @@ cand = { fg = "#E5C736", bold = true }
 rest = { fg = "#E5C736", italic = true }
 desc = { fg = "#53685B" }
 separator = " "
-separator_style = { }
+separator_style = {}
 
 [confirm]
 border = { fg = "#23372B" }
@@ -143,7 +116,7 @@ footer = { fg = "#C1C497", bg = "#0d1512", bold = true }
 [filetype]
 rules = [
   # Images
-  { mime = "image/*", fg = "#D2689C" },
+  { mime = "image/*", fg = "#509475" },
 
   # Media
   { mime = "video/*", fg = "#E5C736" },
@@ -165,5 +138,5 @@ rules = [
 
   # Fallback
   { name = "*", fg = "#a8af7e" },
-  { name = "*/", fg = "#C1C497" }
+  { name = "*/", fg = "#C1C497" },
 ]

@@ -1,24 +1,3 @@
-## Color palette
-## Check https://github.com/rebelot/kanagawa.nvim for more details
-# sumiInk0      "#16161d" dark bg
-# sumiInk3      "#1f1f28" bg
-# sumiInk4      "#2a2a37"
-# sumiInk6      "#54546d"
-# fujiWhite     "#dcd7ba" fg
-# oldWhite      "#c8c093" dark fg
-# fujiGray      "#727169"
-# peachRed      "#ff5d62"
-# autumnRed     "#c34043"
-# crystalBlue   "#7e9cd8"
-# waveRed       "#e46876"
-# carpYellow    "#e6c384"
-# springGreen   "#98bb6c"
-# autumnGreen   "#76946a"
-# oniViolet     "#957fb8"
-# waveAqua1     "#6a9589"
-# surimiOrange  "#ffa066"
-# waveAqua2     "#7aa89f"
-
 [mgr]
 marker_copied = { fg = "#98bb6c", bg = "#98bb6c" }
 marker_cut = { fg = "#e46876", bg = "#e46876" }
@@ -43,9 +22,6 @@ border_style = { fg = "#dcd7ba" }
 active = { fg = "#1f1f28", bg = "#7e9cd8" }
 inactive = { fg = "#7e9cd8", bg = "#2a2a37" }
 
-sep_inner = { open = "", close = "" }
-sep_outer = { open = "", close = "" }
-
 
 [mode]
 normal_main = { fg = "#1f1f28", bg = "#7e9cd8" }
@@ -57,8 +33,6 @@ unset_alt = { fg = "#e6c384", bg = "#2a2a37" }
 
 
 [status]
-sep_left = { open = "", close = "" }
-sep_right = { open = "", close = "" }
 overall = { fg = "#c8c093", bg = "#16161d" }
 
 progress_label = { fg = "#7e9cd8", bold = true }
@@ -116,25 +90,25 @@ title_error = { fg = "#ff5d62" }
 
 [filetype]
 rules = [
-    # images
-    { mime = "image/*", fg = "#e6c384" },
+  # images
+  { mime = "image/*", fg = "#e6c384" },
 
-    # media
-    { mime = "{audio,video}/*", fg = "#957fb8" },
+  # media
+  { mime = "{audio,video}/*", fg = "#957fb8" },
 
-    # archives
-    { mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}", fg = "#e46876" },
+  # archives
+  { mime = "application/{zip,rar,7z*,tar,gzip,xz,zstd,bzip*,lzma,compress,archive,cpio,arj,xar,ms-cab*}", fg = "#e46876" },
 
-    # documents
-    { mime = "application/{pdf,doc,rtf,vnd.*}", fg = "#6a9589" },
+  # documents
+  { mime = "application/{pdf,doc,rtf,vnd.*}", fg = "#6a9589" },
 
-    # broken links
-    { name = "*", is = "orphan", fg = "#c34043" },
+  # broken links
+  { name = "*", is = "orphan", fg = "#c34043" },
 
-    # executables
-    { name = "*", is = "exec", fg = "#76946a" },
+  # executables
+  { name = "*", is = "exec", fg = "#76946a" },
 
-    # fallback
-    { name = "*", fg = "#dcd7ba" },
-    { name = "*/", fg = "#7e9cd8" },
+  # fallback
+  { name = "*", fg = "#dcd7ba" },
+  { name = "*/", fg = "#7e9cd8" },
 ]

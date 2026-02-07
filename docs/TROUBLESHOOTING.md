@@ -1,232 +1,258 @@
-# Troubleshooting
+# How It Works
 
-Common issues and fixes for **Omarchy Yazi**.
+Understanding how **Omarchy Yazi v2.0** integrates with your system using persistent theme profiles.
 
-## 1. Theme not updating automatically
+## Overview
 
-### Check if hook is installed
+Omarchy Yazi automatically updates Yazi's theme when you change your Omarchy theme, while preserving your per-theme customizations.
+
+When Omarchy sets a new theme, it calls an installed hook which triggers a generator that creates (or reuses) a persistent theme profile and updates a symlink.
+
+## Architecture v2.0: Persistent Profiles
+
+### 1. Template Repository
+
+Theme templates are stored in a git-managed repository:
+
+```
+~/.local/share/omarchy-yazi/
+├── themes/
+│   ├── tokyo-night/theme.toml       # Template (read-only)
+│   ├── catppuccin-latte/theme.toml  # Template (read-only)
+│   ├── hackerman/theme.toml         # Template (read-only)
+│   └── ...
+└── scripts/
+```
+
+**These are templates** - updates via `git pull` don't affect your customizations.
+
+### 2. Persistent Theme Profiles
+
+Your actual configurations live separately:
+
+```
+~/.config/yazi/omarchy-themes/
+├── tokyo-night.toml       # YOUR customizations
+├── catppuccin-latte.toml  # YOUR customizations
+├── hackerman.toml         # YOUR customizations
+└── ...
+```
+
+**These are yours** - edit freely, changes persist when you switch themes!
+
+### 3. Active Theme Symlink
 
 ```bash
-cat ~/.config/omarchy/hooks/theme-set
+~/.config/yazi/theme.toml → omarchy-themes/tokyo-night.toml
 ```
 
-Should contain a line like:
-```bash
-/home/YOUR_USERNAME/.local/bin/omarchy-yazi-hook $1
+The symlink always points to your current theme's persistent profile.
+
+### 4. Generator Script
+
+Located at `~/.local/bin/omarchy-yazi-generator`, this script:
+
+1. Reads current theme from `~/.config/omarchy/current/theme.name`
+2. Checks if profile exists in `~/.config/yazi/omarchy-themes/`
+3. **If profile doesn't exist:** Copies from template repository
+4. **If profile exists:** Skips (preserves your customizations!)
+5. Updates symlink to point to the profile
+
+### 5. Omarchy Hook
+
+The installer registers `~/.local/bin/omarchy-yazi-reload` in `~/.config/omarchy/hooks/theme-set`.
+
+When Omarchy switches themes, the reload script:
+
+1. Calls the generator to create/update profile
+2. Clears Yazi's state cache to force reload
+
+## Seamless Integration
+
+When you switch Omarchy themes (`Super + Ctrl + Shift + Space`):
+
+- The hook instantly generates/updates the theme profile
+- Yazi automatically picks up the new theme on next launch
+- Running Yazi instances need to be restarted
+- **Your customizations persist** when you switch back
+
+## Theme Detection
+
+The generator includes smart fallback for theme variants:
+
+- Reads theme name from `~/.config/omarchy/current/theme.name` (Omarchy 3.3+)
+- If you have `catppuccin` in Omarchy but only `catppuccin-macchiato` in the repository, it automatically uses the variant
+- Works for themes like `tokyo-night*`, `catppuccin*`, `gruvbox*`, etc.
+
+## Flow Diagram
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│   User switches Omarchy theme (Super+Ctrl+Shift+Space)      │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Omarchy calls hooks:                                       │
+│  ~/.config/omarchy/hooks/theme-set <new-theme>              │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Reload script executes:                                     │
+│ ~/.local/bin/omarchy-yazi-reload                            │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Generator script executes:                                  │
+│ ~/.local/bin/omarchy-yazi-generator                         │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Generator checks profile exists:                            │
+│ ~/.config/yazi/omarchy-themes/<new-theme>.toml              │
+│   • NO  → Copy from template                                │
+│   • YES → Skip (preserve customizations!)                   │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Generator updates symlink:                                  │
+│ ~/.config/yazi/theme.toml → omarchy-themes/<theme>.toml     │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Reload clears Yazi cache:                                   │
+│ rm -rf ~/.local/state/yazi                                  │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│ ✨ New theme applied on next Yazi launch                    │
+│ ✨ Your customizations preserved                            │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Verify hook script exists
+## File Locations
 
-```bash
-ls -la ~/.local/bin/omarchy-yazi-hook
-```
+| Purpose | Location |
+|---------|----------|
+| Template repository | `~/.local/share/omarchy-yazi/` |
+| Theme templates | `~/.local/share/omarchy-yazi/themes/*/theme.toml` |
+| **Your theme profiles** | **`~/.config/yazi/omarchy-themes/*.toml`** |
+| Active theme symlink | `~/.config/yazi/theme.toml` |
+| Generator script | `~/.local/bin/omarchy-yazi-generator` |
+| Reload script | `~/.local/bin/omarchy-yazi-reload` |
+| Hook registration | `~/.config/omarchy/hooks/theme-set` |
+| Yazi cache | `~/.local/state/yazi` |
 
-If missing, reinstall:
-```bash
-bash ~/.local/share/omarchy-yazi/scripts/omarchy-yazi-install.sh --force
-```
+## Key Features
 
-### Test hook manually
+### Persistent Customizations (NEW in v2.0!)
 
-```bash
-~/.local/bin/omarchy-yazi-hook tokyo-night
-```
-
-Should output:
-```
-[omarchy-yazi] Linked theme: tokyo-night
-[omarchy-yazi] Cleared Yazi state cache
-[omarchy-yazi] Theme switch complete: tokyo-night
-```
-
-## 2. Theme file not found
-
-### Error: "Theme file not found"
-
-Check if theme config exists:
-```bash
-ls -la ~/.config/omarchy/themes/YOUR_THEME/theme-yazi.toml
-```
-
-If missing, regenerate theme configs:
-```bash
-bash ~/.local/share/omarchy-yazi/scripts/omarchy-yazi-install.sh --force
-```
-
-### Check available themes
-
-```bash
-ls ~/.local/share/omarchy-yazi/themes/
-```
-
-If your theme variant is missing from the repository, the installer should use a fallback variant automatically.
-
-## 3. Yazi not picking up theme
-
-### Clear Yazi cache manually
-
-```bash
-rm -rf ~/.local/state/yazi
-```
-
-### Restart Yazi
-
-Kill all running instances:
-```bash
-killall yazi
-```
-
-Then launch Yazi again:
-```bash
-yazi
-```
-
-### Verify symlink
-
-```bash
-ls -la ~/.config/yazi/theme.toml
-```
-
-Should be a symlink (indicated by `->`) pointing to:
-```
-~/.config/omarchy/themes/YOUR_THEME/theme-yazi.toml
-```
-
-If it's a regular file, remove it and let the hook recreate it:
-```bash
-rm ~/.config/yazi/theme.toml
-~/.local/bin/omarchy-yazi-hook YOUR_THEME
-```
-
-## 4. Installation errors
-
-### Error: "Omarchy not found"
-
-Make sure Omarchy is installed:
-```bash
-ls -la ~/.config/omarchy/
-```
-
-Install from: https://omarchy.org
-
-### Error: "Omarchy hook directory not found, version 3.1+ required"
-
-Update Omarchy to version 3.1 or later. The hook system was introduced in this version.
-
-### Error: "No Yazi theme found for: THEME_NAME"
-
-This means your theme doesn't have a corresponding Yazi theme in the repository. The installer should automatically use a variant if available.
-
-Check if a variant exists:
-```bash
-ls ~/.local/share/omarchy-yazi/themes/ | grep YOUR_THEME
-```
-
-## 5. Permission issues
-
-### Hook script not executable
+The biggest change in v2.0: your theme customizations **never get lost**!
 
 ```bash
-chmod +x ~/.local/bin/omarchy-yazi-hook
+# Edit Tokyo Night
+nvim ~/.config/yazi/omarchy-themes/tokyo-night.toml
+
+# Switch to Hackerman
+Super + Ctrl + Shift + Space
+
+# ... days later, switch back to Tokyo Night ...
+Super + Ctrl + Shift + Space
+
+# Your customizations are STILL THERE! 🎉
 ```
 
-### Cannot write to config directories
-
-Make sure you own the config directories:
-```bash
-ls -la ~/.config/omarchy/
-ls -la ~/.config/yazi/
-```
-
-Fix ownership if needed:
-```bash
-sudo chown -R $USER:$USER ~/.config/omarchy/
-sudo chown -R $USER:$USER ~/.config/yazi/
-```
-
-## 6. Theme looks incorrect
-
-### Colors not matching Omarchy
-
-1. Verify you're using the correct theme:
-```bash
-readlink ~/.config/yazi/theme.toml
-```
-
-2. Check Omarchy's current theme:
-```bash
-ls -la ~/.config/omarchy/current/theme
-```
-
-3. Manually switch to correct theme:
-```bash
-~/.local/bin/omarchy-yazi-hook CORRECT_THEME_NAME
-```
-
-### Theme file corrupted
-
-Regenerate theme configs:
-```bash
-bash ~/.local/share/omarchy-yazi/scripts/omarchy-yazi-install.sh --force
-```
-
-## 7. Multiple Yazi instances
-
-If you have multiple Yazi instances running, they may not all update immediately:
+### Safe Updates
 
 ```bash
-# Kill all Yazi instances
-killall yazi
+# Update repository
+cd ~/.local/share/omarchy-yazi
+git pull
 
-# Launch fresh instance
-yazi
+# Templates updated, but YOUR profiles untouched ✅
 ```
 
-## 8. Backup files accumulating
+### Automatic Profile Creation
 
-Old backup files can be safely removed:
+Profiles are created **on-demand** when you first switch to a theme:
+
+- First time switching to `hackerman`: Profile created from template
+- Second time: Profile already exists, customizations preserved
+- Third time: Still using your customized profile
+
+### Cache Clearing
+
+The reload script clears Yazi's state cache to ensure the new theme is immediately recognized, avoiding stale color schemes.
+
+## Customization Workflow
+
+### Edit Your Theme Profile
 
 ```bash
-rm ~/.config/yazi/theme.toml.backup.*
+# 1. Find current theme
+current=$(cat ~/.config/omarchy/current/theme.name)
+
+# 2. Edit profile
+nvim ~/.config/yazi/omarchy-themes/$current.toml
+
+# 3. Restart Yazi to see changes
+killall yazi && yazi
 ```
 
-The hook automatically cleans these, but you can do it manually if needed.
+### Reset to Default
 
-## Getting Help
-
-If issues persist, open a [GitHub Issue](https://github.com/joaofelipegalvao/omarchy-yazi/issues) with:
-
-### System Information
 ```bash
-# Operating system
-uname -a
+# Remove your customized profile
+rm ~/.config/yazi/omarchy-themes/tokyo-night.toml
 
-# Yazi version
-yazi --version
+# Switch away and back (or run generator)
+~/.local/bin/omarchy-yazi-generator
 
-# Omarchy version
-cat ~/.local/share/omarchy/version 2>/dev/null || echo "Unknown"
+# Fresh profile created from template
 ```
 
-### Configuration Status
+## Differences from v1.x
+
+| Feature | v1.x | v2.0 |
+|---------|------|------|
+| **Profile location** | `~/.config/omarchy/themes/*/theme-yazi.toml` | `~/.config/yazi/omarchy-themes/*.toml` |
+| **Customizations** | Lost on update | Persistent |
+| **Template storage** | Mixed with configs | Separate in `~/.local/share/` |
+| **Update safety** | Overwrites configs | Never touches profiles |
+| **Theme detection** | Manual | Auto from `theme.name` |
+
+## Why This Architecture?
+
+### Separation of Concerns
+
+- **Templates** (`~/.local/share/`) - Managed by git, updated safely
+- **Your configs** (`~/.config/`) - Never touched by updates
+
+### XDG Compliance
+
+Following [XDG Base Directory](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html):
+
+- `~/.config/` - User-modifiable configuration
+- `~/.local/share/` - Application data (read-only templates)
+
+### Easy Backup
+
 ```bash
-# Current theme symlink
-ls -la ~/.config/yazi/theme.toml
-
-# Current Omarchy theme
-ls -la ~/.config/omarchy/current/theme
-
-# Hook installation
-cat ~/.config/omarchy/hooks/theme-set
-
-# Available theme configs
-ls -la ~/.config/omarchy/themes/*/theme-yazi.toml
+# Backup only YOUR customizations
+tar -czf yazi-backup.tar.gz ~/.config/yazi/omarchy-themes/
 ```
 
-### Hook Test
+### Predictable Updates
+
 ```bash
-# Test hook manually (replace with your theme)
-~/.local/bin/omarchy-yazi-hook tokyo-night
-```
+# Update templates
+cd ~/.local/share/omarchy-yazi && git pull
 
-Include all this information in your issue report for faster assistance!
+# Your profiles untouched ✅
+```

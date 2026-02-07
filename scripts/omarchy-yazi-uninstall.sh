@@ -1,14 +1,15 @@
 #!/bin/bash
-# Omarchy Yazi Theme - Uninstaller
+# Omarchy Yazi - Uninstaller (v2.0.0)
 # https://github.com/joaofelipegalvao/omarchy-yazi
 
 set -uo pipefail
 
-readonly VERSION="1.0.0"
+readonly VERSION="2.0.0"
 readonly INSTALL_DIR="$HOME/.local/share/omarchy-yazi"
 readonly YAZI_CONF="$HOME/.config/yazi/theme.toml"
-readonly THEMES_DIR="$HOME/.config/omarchy/themes"
-readonly HOOK_SCRIPT="$HOME/.local/bin/omarchy-yazi-hook"
+readonly PERSISTENT_THEMES_DIR="$HOME/.config/yazi/omarchy-themes"
+readonly RELOAD_SCRIPT="$HOME/.local/bin/omarchy-yazi-reload"
+readonly GENERATOR_SCRIPT="$HOME/.local/bin/omarchy-yazi-generator"
 readonly HOOK_FILE="$HOME/.config/omarchy/hooks/theme-set"
 readonly YAZI_STATE="$HOME/.local/state/yazi"
 
@@ -30,11 +31,11 @@ error() {
   echo -e "${RED}✗${NC} $*" >&2
   exit 1
 }
-info() { [[ $QUIET -eq 0 ]] && echo -e "${BLUE}󰋼${NC} $*"; }
+info() { [[ $QUIET -eq 0 ]] && echo -e "${BLUE}ℹ ${NC} $*"; }
 
 usage() {
   cat <<EOF
-Omarchy Yazi Theme Uninstaller v$VERSION
+Omarchy Yazi Uninstaller v$VERSION
 
 Usage: $(basename "$0") [OPTIONS]
 
@@ -42,7 +43,7 @@ Options:
   -h, --help          Show this help
   -q, --quiet         Minimal output
   -f, --force         Skip confirmation prompts
-  -k, --keep-configs  Keep theme configs in ~/.config/omarchy/themes
+  -k, --keep-configs  Keep theme profiles in ~/.config/yazi/omarchy-themes
   -v, --version       Show version
 
 EOF
@@ -57,26 +58,34 @@ confirm() {
   [[ $response =~ ^[Yy]$ ]]
 }
 
-remove_plugin() {
+remove_fallback_themes() {
   if [[ -d "$INSTALL_DIR" ]]; then
-    log "Removing Omarchy Yazi plugin directory..."
-    rm -rf "$INSTALL_DIR" || warn "Failed to remove plugin directory: $INSTALL_DIR"
+    log "Removing fallback theme repository..."
+    rm -rf "$INSTALL_DIR" || warn "Failed to remove: $INSTALL_DIR"
   else
-    [[ $QUIET -eq 0 ]] && info "Plugin directory not found, skipping."
+    [[ $QUIET -eq 0 ]] && info "Fallback themes directory not found, skipping."
+  fi
+}
+
+remove_scripts() {
+  # Remove generator script
+  if [[ -f "$GENERATOR_SCRIPT" ]]; then
+    log "Removing generator script..."
+    rm -f "$GENERATOR_SCRIPT"
+  fi
+
+  # Remove reload script
+  if [[ -f "$RELOAD_SCRIPT" ]]; then
+    log "Removing reload script..."
+    rm -f "$RELOAD_SCRIPT"
   fi
 }
 
 remove_hook() {
-  # Remove hook script
-  if [[ -f "$HOOK_SCRIPT" ]]; then
-    log "Removing hook script..."
-    rm -f "$HOOK_SCRIPT"
-  fi
-
   if [[ -f "$HOOK_FILE" ]]; then
-    if grep -q 'omarchy-yazi-hook' "$HOOK_FILE"; then
+    if grep -q 'omarchy-yazi-reload' "$HOOK_FILE"; then
       log "Removing hook from Omarchy configuration..."
-      sed -i '/omarchy-yazi-hook/d' "$HOOK_FILE"
+      sed -i '/omarchy-yazi-reload/d' "$HOOK_FILE"
 
       # If file only contains shebang, remove it
       if [[ $(wc -l <"$HOOK_FILE") -le 1 ]]; then
@@ -95,12 +104,12 @@ clean_yazi_conf() {
 
   if [[ -L "$YAZI_CONF" ]]; then
     local link_target=$(readlink "$YAZI_CONF")
-    if [[ "$link_target" == *"/omarchy/themes/"* ]]; then
+    if [[ "$link_target" == *"/omarchy-themes/"* ]]; then
       log "Removing Omarchy theme symlink..."
       rm -f "$YAZI_CONF"
 
       # Restore from backup if exists
-      local backup=$(find "$(dirname "$YAZI_CONF")" -maxdepth 1 -name "theme.toml.backup.*" -type f | sort -r | head -n1)
+      local backup=$(find "$(dirname "$YAZI_CONF")" -maxdepth 1 -name "theme.toml.backup.*" -type f 2>/dev/null | sort -r | head -n1)
       if [[ -n "$backup" ]]; then
         cp "$backup" "$YAZI_CONF"
         log "Restored backup: $(basename "$backup")"
@@ -112,41 +121,28 @@ clean_yazi_conf() {
     info "Yazi theme.toml is not a symlink, keeping it."
   fi
 
+  # Clean up old backups
   find "$(dirname "$YAZI_CONF")" -maxdepth 1 -name "theme.toml.backup.*" -type f -delete 2>/dev/null || true
 }
 
-remove_theme_configs() {
+remove_theme_profiles() {
   if [[ $KEEP_CONFIGS -eq 1 ]]; then
-    info "Keeping theme configs (--keep-configs)"
+    info "Keeping theme profiles (--keep-configs)"
     return
   fi
 
-  if [[ ! -d "$THEMES_DIR" ]]; then
-    warn "Themes directory not found at $THEMES_DIR"
+  if [[ ! -d "$PERSISTENT_THEMES_DIR" ]]; then
+    warn "Persistent themes directory not found at $PERSISTENT_THEMES_DIR"
     return
   fi
 
-  local count=0
-
-  for theme_dir in "$THEMES_DIR"/*; do
-    [[ ! -d "$theme_dir" ]] && continue
-
-    local theme_name=$(basename "$theme_dir")
-    local yazi_file="$theme_dir/theme-yazi.toml" # CORRIGIDO: era theme.toml
-
-    if [[ -f "$yazi_file" ]]; then
-      if [[ $QUIET -eq 0 ]]; then
-        log "Removing config: $theme_name/theme-yazi.toml"
-      fi
-      rm -f "$yazi_file"
-      ((count++)) || true
-    fi
-  done
+  local count=$(find "$PERSISTENT_THEMES_DIR" -maxdepth 1 -name "*.toml" -type f 2>/dev/null | wc -l)
 
   if [[ $count -gt 0 ]]; then
-    log "Removed $count Yazi theme config(s)"
+    log "Removing $count theme profile(s)..."
+    rm -rf "$PERSISTENT_THEMES_DIR"
   else
-    [[ $QUIET -eq 0 ]] && info "No Yazi theme configs found to remove"
+    [[ $QUIET -eq 0 ]] && info "No theme profiles found to remove"
   fi
 }
 
@@ -165,8 +161,9 @@ show_summary() {
   echo -e "\n${BLUE}Removal Summary:${NC}"
 
   echo -e "\n${GREEN}Removed:${NC}"
-  [[ ! -d "$INSTALL_DIR" ]] && echo "  ✓ Omarchy Yazi plugin"
-  [[ ! -f "$HOOK_SCRIPT" ]] && echo "  ✓ Hook script"
+  [[ ! -d "$INSTALL_DIR" ]] && echo "  ✓ Fallback theme repository"
+  [[ ! -f "$GENERATOR_SCRIPT" ]] && echo "  ✓ Generator script"
+  [[ ! -f "$RELOAD_SCRIPT" ]] && echo "  ✓ Reload script"
   [[ ! -L "$YAZI_CONF" ]] && echo "  ✓ Theme symlink"
   [[ ! -d "$YAZI_STATE" ]] && echo "  ✓ Yazi cache"
 
@@ -176,8 +173,12 @@ show_summary() {
   echo -e "    ${CYAN}yazi${NC}"
 
   if [[ $KEEP_CONFIGS -eq 0 ]]; then
-    echo -e "\n  Theme configs were removed from:"
-    echo -e "    ${CYAN}~/.config/omarchy/themes/*/theme-yazi.toml${NC}"
+    echo -e "\n  Theme profiles were removed from:"
+    echo -e "    ${CYAN}~/.config/yazi/omarchy-themes/${NC}"
+  else
+    echo -e "\n  Theme profiles were kept at:"
+    echo -e "    ${CYAN}~/.config/yazi/omarchy-themes/${NC}"
+    echo "  You can manually remove them if desired."
   fi
 }
 
@@ -201,7 +202,8 @@ main() {
       echo "$VERSION"
       exit 0
       ;;
-    *) error "Unknown option: $1\nUse --help for usage" ;;
+    *) error "Unknown option: $1
+Use --help for usage" ;;
     esac
   done
 
@@ -211,11 +213,12 @@ main() {
 
   if [[ $FORCE -eq 0 ]]; then
     echo "This will remove the following components:"
-    echo "  • Omarchy Yazi plugin ($INSTALL_DIR)"
-    echo "  • Hook script ($HOOK_SCRIPT)"
+    echo "  • Fallback theme repository ($INSTALL_DIR)"
+    echo "  • Generator script ($GENERATOR_SCRIPT)"
+    echo "  • Reload script ($RELOAD_SCRIPT)"
     echo "  • Theme symlink ($YAZI_CONF)"
     echo "  • Yazi cache ($YAZI_STATE)"
-    [[ $KEEP_CONFIGS -eq 0 ]] && echo "  • Theme configs (use -k to keep)"
+    [[ $KEEP_CONFIGS -eq 0 ]] && echo "  • Theme profiles (use -k to keep)"
     echo ""
 
     if ! confirm "Continue with uninstallation?"; then
@@ -224,10 +227,11 @@ main() {
     fi
   fi
 
-  remove_plugin
+  remove_fallback_themes
+  remove_scripts
   remove_hook
   clean_yazi_conf
-  remove_theme_configs
+  remove_theme_profiles
   clean_yazi_state
   show_summary
 

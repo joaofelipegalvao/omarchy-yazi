@@ -1,76 +1,86 @@
 # How It Works
 
-Understanding how **Omarchy Yazi** integrates with your system.
+Understanding how **Omarchy Yazi v2.0** integrates with your system using persistent theme profiles.
 
 ## Overview
 
-Omarchy Yazi automatically updates Yazi's theme when you change your Omarchy theme.
+Omarchy Yazi automatically updates Yazi's theme when you change your Omarchy theme, while preserving your per-theme customizations.
 
-When Omarchy sets a new theme, it calls an installed hook which creates a symlink to the corresponding Yazi theme configuration.
+When Omarchy sets a new theme, it calls an installed hook which triggers a generator that creates (or reuses) a persistent theme profile and updates a symlink.
 
-## Architecture
+## Architecture v2.0: Persistent Profiles
 
-### 1. Theme Directories
+### 1. Template Repository
 
-Each Omarchy theme directory contains a `theme-yazi.toml` file generated during installation:
+Theme templates are stored in a git-managed repository:
 
 ```
-~/.config/omarchy/themes/
-├── tokyo-night/
-│   └── theme-yazi.toml
-├── catppuccin/
-│   └── theme-yazi.toml
+~/.local/share/omarchy-yazi/
+├── themes/
+│   ├── tokyo-night/theme.toml       # Template (read-only)
+│   ├── catppuccin-latte/theme.toml  # Template (read-only)
+│   ├── hackerman/theme.toml         # Template (read-only)
+│   └── ...
+└── scripts/
+```
+
+**These are templates** - updates via `git pull` don't affect your customizations.
+
+### 2. Persistent Theme Profiles
+
+Your actual configurations live separately:
+
+```
+~/.config/yazi/omarchy-themes/
+├── tokyo-night.toml       # YOUR customizations
+├── catppuccin-latte.toml  # YOUR customizations
+├── hackerman.toml         # YOUR customizations
 └── ...
 ```
 
-### 2. Theme Files
+**These are yours** - edit freely, changes persist when you switch themes!
 
-The installer copies theme configurations from the plugin repository to each theme directory:
+### 3. Active Theme Symlink
 
 ```bash
-~/.local/share/omarchy-yazi/themes/tokyo-night/theme.toml
-    ↓ (copied during installation)
-~/.config/omarchy/themes/tokyo-night/theme-yazi.toml
+~/.config/yazi/theme.toml → omarchy-themes/tokyo-night.toml
 ```
 
-### 3. Omarchy Hook
+The symlink always points to your current theme's persistent profile.
 
-The installer adds a hook script to `~/.local/bin/omarchy-yazi-hook` and registers it in `~/.config/omarchy/hooks/theme-set`.
+### 4. Generator Script
 
-When Omarchy switches themes, this hook:
-1. Creates a symlink: `~/.config/yazi/theme.toml` → `~/.config/omarchy/themes/<theme>/theme-yazi.toml`
+Located at `~/.local/bin/omarchy-yazi-generator`, this script:
+
+1. Reads current theme from `~/.config/omarchy/current/theme.name`
+2. Checks if profile exists in `~/.config/yazi/omarchy-themes/`
+3. **If profile doesn't exist:** Copies from template repository
+4. **If profile exists:** Skips (preserves your customizations!)
+5. Updates symlink to point to the profile
+
+### 5. Omarchy Hook
+
+The installer registers `~/.local/bin/omarchy-yazi-reload` in `~/.config/omarchy/hooks/theme-set`.
+
+When Omarchy switches themes, the reload script:
+
+1. Calls the generator to create/update profile
 2. Clears Yazi's state cache to force reload
-3. Removes orphaned backup files
 
-### 4. Seamless Integration
+## Seamless Integration
 
 When you switch Omarchy themes (`Super + Ctrl + Shift + Space`):
-- The hook instantly updates the symlink
+
+- The hook instantly generates/updates the theme profile
 - Yazi automatically picks up the new theme on next launch
 - Running Yazi instances need to be restarted
+- **Your customizations persist** when you switch back
 
-## Generated Files
+## Theme Detection
 
-### Per Theme
+The generator includes smart fallback for theme variants:
 
-Each theme gets a `theme-yazi.toml` file:
-
-```bash
-~/.config/omarchy/themes/tokyo-night/theme-yazi.toml
-~/.config/omarchy/themes/catppuccin/theme-yazi.toml
-# ... for all installed themes
-```
-
-### Active Theme Symlink
-
-```bash
-~/.config/yazi/theme.toml → ~/.config/omarchy/themes/tokyo-night/theme-yazi.toml
-```
-
-## Variant Detection
-
-The installer includes smart fallback for theme variants:
-
+- Reads theme name from `~/.config/omarchy/current/theme.name` (Omarchy 3.3+)
 - If you have `catppuccin` in Omarchy but only `catppuccin-macchiato` in the repository, it automatically uses the variant
 - Works for themes like `tokyo-night*`, `catppuccin*`, `gruvbox*`, etc.
 
@@ -89,26 +99,40 @@ The installer includes smart fallback for theme variants:
                         │
                         ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ Hook script executes:                                       │
-│ ~/.local/bin/omarchy-yazi-hook <new-theme>                  │
+│ Reload script executes:                                     │
+│ ~/.local/bin/omarchy-yazi-reload                            │
 └───────────────────────┬─────────────────────────────────────┘
                         │
                         ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Hook updates symlink:                                      │
-│  ~/.config/yazi/theme.toml →                                │
-│    ~/.config/omarchy/themes/<new-theme>/theme-yazi.toml     │
+│ Generator script executes:                                  │
+│ ~/.local/bin/omarchy-yazi-generator                         │
 └───────────────────────┬─────────────────────────────────────┘
                         │
                         ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Hook clears Yazi cache:                                    │
-│  rm -rf ~/.local/state/yazi                                 │
+│ Generator checks profile exists:                            │
+│ ~/.config/yazi/omarchy-themes/<new-theme>.toml              │
+│   • NO  → Copy from template                                │
+│   • YES → Skip (preserve customizations!)                   │
 └───────────────────────┬─────────────────────────────────────┘
                         │
                         ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  ✨ New theme applied on next Yazi launch                   │
+│ Generator updates symlink:                                  │
+│ ~/.config/yazi/theme.toml → omarchy-themes/<theme>.toml     │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Reload clears Yazi cache:                                   │
+│ rm -rf ~/.local/state/yazi                                  │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│ ✨ New theme applied on next Yazi launch                    │
+│ ✨ Your customizations preserved                            │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -116,27 +140,119 @@ The installer includes smart fallback for theme variants:
 
 | Purpose | Location |
 |---------|----------|
-| Plugin repository | `~/.local/share/omarchy-yazi/` |
-| Theme configs | `~/.config/omarchy/themes/*/theme-yazi.toml` |
+| Template repository | `~/.local/share/omarchy-yazi/` |
+| Theme templates | `~/.local/share/omarchy-yazi/themes/*/theme.toml` |
+| **Your theme profiles** | **`~/.config/yazi/omarchy-themes/*.toml`** |
 | Active theme symlink | `~/.config/yazi/theme.toml` |
-| Hook script | `~/.local/bin/omarchy-yazi-hook` |
+| Generator script | `~/.local/bin/omarchy-yazi-generator` |
+| Reload script | `~/.local/bin/omarchy-yazi-reload` |
 | Hook registration | `~/.config/omarchy/hooks/theme-set` |
 | Yazi cache | `~/.local/state/yazi` |
 
 ## Key Features
 
-### Automatic Backup
+### Persistent Customizations (NEW in v2.0!)
 
-Before creating the symlink, the hook automatically backs up any existing non-symlinked `theme.toml`:
+The biggest change in v2.0: your theme customizations **never get lost**!
 
 ```bash
-~/.config/yazi/theme.toml.backup.20231104_230145
+# Edit Tokyo Night
+nvim ~/.config/yazi/omarchy-themes/tokyo-night.toml
+
+# Switch to Hackerman
+Super + Ctrl + Shift + Space
+
+# ... days later, switch back to Tokyo Night ...
+Super + Ctrl + Shift + Space
+
+# Your customizations are STILL THERE! 🎉
 ```
+
+### Safe Updates
+
+```bash
+# Update repository
+cd ~/.local/share/omarchy-yazi
+git pull
+
+# Templates updated, but YOUR profiles untouched ✅
+```
+
+### Automatic Profile Creation
+
+Profiles are created **on-demand** when you first switch to a theme:
+
+- First time switching to `hackerman`: Profile created from template
+- Second time: Profile already exists, customizations preserved
+- Third time: Still using your customized profile
 
 ### Cache Clearing
 
-The hook clears Yazi's state cache to ensure the new theme is immediately recognized, avoiding stale color schemes.
+The reload script clears Yazi's state cache to ensure the new theme is immediately recognized, avoiding stale color schemes.
 
-### Orphan Cleanup
+## Customization Workflow
 
-Old backup files are automatically cleaned up to prevent clutter in your config directory.
+### Edit Your Theme Profile
+
+```bash
+# 1. Find current theme
+current=$(cat ~/.config/omarchy/current/theme.name)
+
+# 2. Edit profile
+nvim ~/.config/yazi/omarchy-themes/$current.toml
+
+# 3. Restart Yazi to see changes
+killall yazi && yazi
+```
+
+### Reset to Default
+
+```bash
+# Remove your customized profile
+rm ~/.config/yazi/omarchy-themes/tokyo-night.toml
+
+# Switch away and back (or run generator)
+~/.local/bin/omarchy-yazi-generator
+
+# Fresh profile created from template
+```
+
+## Differences from v1.x
+
+| Feature | v1.x | v2.0 |
+|---------|------|------|
+| **Profile location** | `~/.config/omarchy/themes/*/theme-yazi.toml` | `~/.config/yazi/omarchy-themes/*.toml` |
+| **Customizations** | Lost on update | Persistent |
+| **Template storage** | Mixed with configs | Separate in `~/.local/share/` |
+| **Update safety** | Overwrites configs | Never touches profiles |
+| **Theme detection** | Manual | Auto from `theme.name` |
+
+## Why This Architecture?
+
+### Separation of Concerns
+
+- **Templates** (`~/.local/share/`) - Managed by git, updated safely
+- **Your configs** (`~/.config/`) - Never touched by updates
+
+### XDG Compliance
+
+Following [XDG Base Directory](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html):
+
+- `~/.config/` - User-modifiable configuration
+- `~/.local/share/` - Application data (read-only templates)
+
+### Easy Backup
+
+```bash
+# Backup only YOUR customizations
+tar -czf yazi-backup.tar.gz ~/.config/yazi/omarchy-themes/
+```
+
+### Predictable Updates
+
+```bash
+# Update templates
+cd ~/.local/share/omarchy-yazi && git pull
+
+# Your profiles untouched ✅
+```
