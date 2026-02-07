@@ -4,7 +4,7 @@ This document explains all installation methods for **Omarchy Yazi**.
 
 ## Requirements
 
-- [Omarchy](https://omarchy.org) (version 3.1+)
+- [Omarchy](https://omarchy.org) (version 3.3+)
 - [Yazi](https://github.com/sxyazi/yazi)
 - `git`
 
@@ -47,9 +47,9 @@ bash ~/.local/share/omarchy-yazi/scripts/omarchy-yazi-install.sh
 
 The installer will:
 - ✅ Check for Omarchy installation
-- ✅ Copy theme configurations for all your themes
+- ✅ Create a persistent theme generator
 - ✅ Install the hook script
-- ✅ Create initial symlink to current theme
+- ✅ Create the initial symlink to the current theme
 
 ### 4. Restart Yazi
 
@@ -95,7 +95,7 @@ ls -la ~/.local/share/omarchy-yazi/
 ### Check theme configs
 
 ```bash
-ls -la ~/.config/omarchy/themes/*/theme-yazi.toml
+ls -la ~/.config/yazi/omarchy-themes
 ```
 
 ### Check hook installation
@@ -168,14 +168,15 @@ The installer creates/modifies:
 | Location | Purpose |
 |----------|---------|
 | `~/.local/share/omarchy-yazi/` | Plugin files and theme templates |
-| `~/.config/omarchy/themes/*/theme-yazi.toml` | Theme configs for each theme |
+| `~/.config/yazi/omarchy-themes/` | Persistent theme profiles |
 | `~/.config/yazi/theme.toml` | Symlink to active theme |
 | `~/.local/bin/omarchy-yazi-hook` | Hook script for theme switching |
+| `~/.local/bin/omarchy-yazi-generator` | Persistent theme generator |
 | `~/.config/omarchy/hooks/theme-set` | Hook registration (modified) |
 
 ## Notes
 
 - The plugin **does not modify** Omarchy's core files in `~/.local/share/omarchy`
 - All configurations are in user-editable locations (`~/.config`)
-- You can manually edit theme files in `~/.config/omarchy/themes/*/theme-yazi.toml`
+- You can manually edit theme files in `~/.config/yazi/omarchy-themes/*.toml`
 - Backups are automatically created before replacing existing configs

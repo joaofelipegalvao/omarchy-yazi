@@ -4,29 +4,18 @@
 
 set -euo pipefail
 
-readonly THEME="${1:-}"
-readonly THEME_DIR="$HOME/.config/omarchy/themes/$THEME"
-readonly THEME_YAZI="$THEME_DIR/theme-yazi.toml"
-readonly YAZI_CONF="$HOME/.config/yazi/theme.toml"
+readonly GENERATOR="$HOME/.local/bin/omarchy-yazi-generator"
 readonly YAZI_STATE="$HOME/.local/state/yazi"
 
 log() { echo "[omarchy-yazi] $*" >&2; }
-error() {
-  echo "[omarchy-yazi] ERROR: $*" >&2
-  exit 1
-}
+warn() { echo "[omarchy-yazi] WARNING: $*" >&2; }
 
-[[ -z "$THEME" ]] && error "No theme specified"
-
-[[ ! -f "$THEME_YAZI" ]] && error "Theme file not found: $THEME_YAZI"
-
-if [[ -f "$YAZI_CONF" ]] && [[ ! -L "$YAZI_CONF" ]]; then
-  cp "$YAZI_CONF" "$YAZI_CONF.backup.$(date +%Y%m%d_%H%M%S)"
-  log "Backed up existing theme configuration"
+if [[ -x "$GENERATOR" ]]; then
+  "$GENERATOR" "${1:-}" &>/dev/null || warn "Generator failed"
+else
+  warn "Generator not found at $GENERATOR"
+  exit 0
 fi
-
-ln -sf "$THEME_YAZI" "$YAZI_CONF" || error "Failed to create symlink"
-log "Linked theme: $THEME"
 
 if [[ -d "$YAZI_STATE" ]]; then
   rm -rf "$YAZI_STATE"
@@ -35,4 +24,4 @@ fi
 
 find "$HOME/.config/yazi" -maxdepth 1 -name "theme.toml-*" -type f -delete 2>/dev/null || true
 
-log "Theme switch complete: $THEME"
+log "Theme sync complete"

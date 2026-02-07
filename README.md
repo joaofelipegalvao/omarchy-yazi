@@ -46,7 +46,7 @@ Then restart Yazi to see your current Omarchy theme applied.
 
 ## Requirements
 
-- [Omarchy](https://omarchy.org) (version 3.1+)
+- [Omarchy](https://omarchy.org) (version 3.3+)
 - [Yazi](https://github.com/sxyazi/yazi)
 - `git`
 

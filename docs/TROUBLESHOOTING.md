@@ -34,9 +34,8 @@ bash ~/.local/share/omarchy-yazi/scripts/omarchy-yazi-install.sh --force
 
 Should output:
 ```
-[omarchy-yazi] Linked theme: tokyo-night
 [omarchy-yazi] Cleared Yazi state cache
-[omarchy-yazi] Theme switch complete: tokyo-night
+[omarchy-yazi] Theme sync complete
 ```
 
 ## 2. Theme file not found
@@ -45,7 +44,7 @@ Should output:
 
 Check if theme config exists:
 ```bash
-ls -la ~/.config/omarchy/themes/YOUR_THEME/theme-yazi.toml
+ls -la ~/.config/yazi/omarchy-themes/YOUR_THEME.toml
 ```
 
 If missing, regenerate theme configs:
@@ -59,7 +58,7 @@ bash ~/.local/share/omarchy-yazi/scripts/omarchy-yazi-install.sh --force
 ls ~/.local/share/omarchy-yazi/themes/
 ```
 
-If your theme variant is missing from the repository, the installer should use a fallback variant automatically.
+If your theme variant is missing from the repository, the generator should use a fallback variant automatically.
 
 ## 3. Yazi not picking up theme
 
@@ -89,7 +88,7 @@ ls -la ~/.config/yazi/theme.toml
 
 Should be a symlink (indicated by `->`) pointing to:
 ```
-~/.config/omarchy/themes/YOUR_THEME/theme-yazi.toml
+~/.config/yazi/omarchy-themes/YOUR_THEME.toml
 ```
 
 If it's a regular file, remove it and let the hook recreate it:
@@ -109,13 +108,13 @@ ls -la ~/.config/omarchy/
 
 Install from: https://omarchy.org
 
-### Error: "Omarchy hook directory not found, version 3.1+ required"
+### Error: "Theme name file not found"
 
-Update Omarchy to version 3.1 or later. The hook system was introduced in this version.
+Update Omarchy to version 3.3 or later. The `~/.config/omarchy/current/theme.name` file was introduced in this version.
 
 ### Error: "No Yazi theme found for: THEME_NAME"
 
-This means your theme doesn't have a corresponding Yazi theme in the repository. The installer should automatically use a variant if available.
+This means your theme doesn't have a corresponding Yazi theme in the repository. The generator should automatically use a variant if available.
 
 Check if a variant exists:
 ```bash
@@ -155,7 +154,7 @@ readlink ~/.config/yazi/theme.toml
 
 2. Check Omarchy's current theme:
 ```bash
-ls -la ~/.config/omarchy/current/theme
+cat ~/.config/omarchy/current/theme.name
 ```
 
 3. Manually switch to correct theme:
@@ -190,7 +189,7 @@ Old backup files can be safely removed:
 rm ~/.config/yazi/theme.toml.backup.*
 ```
 
-The hook automatically cleans these, but you can do it manually if needed.
+These backups are not automatically cleaned, so you can remove them manually if needed.
 
 ## Getting Help
 
@@ -214,13 +213,13 @@ cat ~/.local/share/omarchy/version 2>/dev/null || echo "Unknown"
 ls -la ~/.config/yazi/theme.toml
 
 # Current Omarchy theme
-ls -la ~/.config/omarchy/current/theme
+cat ~/.config/omarchy/current/theme.name
 
 # Hook installation
 cat ~/.config/omarchy/hooks/theme-set
 
 # Available theme configs
-ls -la ~/.config/omarchy/themes/*/theme-yazi.toml
+ls -la ~/.config/yazi/omarchy-themes
 ```
 
 ### Hook Test

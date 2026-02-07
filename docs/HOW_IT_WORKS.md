@@ -6,31 +6,29 @@ Understanding how **Omarchy Yazi** integrates with your system.
 
 Omarchy Yazi automatically updates Yazi's theme when you change your Omarchy theme.
 
-When Omarchy sets a new theme, it calls an installed hook which creates a symlink to the corresponding Yazi theme configuration.
+When Omarchy sets a new theme, it calls an installed hook which regenerates a persistent theme profile and updates a symlink to that profile.
 
 ## Architecture
 
-### 1. Theme Directories
+### 1. Persistent Theme Profiles
 
-Each Omarchy theme directory contains a `theme-yazi.toml` file generated during installation:
+Each theme has a persistent profile stored in Yazi's config directory:
 
 ```
-~/.config/omarchy/themes/
-├── tokyo-night/
-│   └── theme-yazi.toml
-├── catppuccin/
-│   └── theme-yazi.toml
+~/.config/yazi/omarchy-themes/
+├── tokyo-night.toml
+├── catppuccin-latte.toml
 └── ...
 ```
 
-### 2. Theme Files
+### 2. Theme Templates
 
-The installer copies theme configurations from the plugin repository to each theme directory:
+The generator copies theme templates from the plugin repository into the persistent profiles (only if they don't already exist):
 
 ```bash
 ~/.local/share/omarchy-yazi/themes/tokyo-night/theme.toml
-    ↓ (copied during installation)
-~/.config/omarchy/themes/tokyo-night/theme-yazi.toml
+    ↓ (copied on first use)
+~/.config/yazi/omarchy-themes/tokyo-night.toml
 ```
 
 ### 3. Omarchy Hook
@@ -38,9 +36,10 @@ The installer copies theme configurations from the plugin repository to each the
 The installer adds a hook script to `~/.local/bin/omarchy-yazi-hook` and registers it in `~/.config/omarchy/hooks/theme-set`.
 
 When Omarchy switches themes, this hook:
-1. Creates a symlink: `~/.config/yazi/theme.toml` → `~/.config/omarchy/themes/<theme>/theme-yazi.toml`
-2. Clears Yazi's state cache to force reload
-3. Removes orphaned backup files
+1. Runs the generator (reads `~/.config/omarchy/current/theme.name`)
+2. Ensures the persistent profile exists
+3. Updates the symlink: `~/.config/yazi/theme.toml` → `~/.config/yazi/omarchy-themes/<theme>.toml`
+4. Clears Yazi's state cache to force reload
 
 ### 4. Seamless Integration
 
@@ -53,26 +52,26 @@ When you switch Omarchy themes (`Super + Ctrl + Shift + Space`):
 
 ### Per Theme
 
-Each theme gets a `theme-yazi.toml` file:
+Each theme gets a persistent profile:
 
 ```bash
-~/.config/omarchy/themes/tokyo-night/theme-yazi.toml
-~/.config/omarchy/themes/catppuccin/theme-yazi.toml
+~/.config/yazi/omarchy-themes/tokyo-night.toml
+~/.config/yazi/omarchy-themes/catppuccin-latte.toml
 # ... for all installed themes
 ```
 
 ### Active Theme Symlink
 
 ```bash
-~/.config/yazi/theme.toml → ~/.config/omarchy/themes/tokyo-night/theme-yazi.toml
+~/.config/yazi/theme.toml → ~/.config/yazi/omarchy-themes/tokyo-night.toml
 ```
 
 ## Variant Detection
 
-The installer includes smart fallback for theme variants:
+The generator includes smart fallback for theme variants:
 
-- If you have `catppuccin` in Omarchy but only `catppuccin-macchiato` in the repository, it automatically uses the variant
-- Works for themes like `tokyo-night*`, `catppuccin*`, `gruvbox*`, etc.
+- If Omarchy uses a theme name that isn't an exact match, it searches for a prefix match (e.g., `catppuccin*` or `tokyo-night*`).
+- If no match is found, it falls back to `tokyo-night`.
 
 ## Flow Diagram
 
@@ -95,9 +94,15 @@ The installer includes smart fallback for theme variants:
                         │
                         ▼
 ┌─────────────────────────────────────────────────────────────┐
+│ Generator ensures profile exists:                           │
+│ ~/.config/yazi/omarchy-themes/<new-theme>.toml              │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
 │  Hook updates symlink:                                      │
 │  ~/.config/yazi/theme.toml →                                │
-│    ~/.config/omarchy/themes/<new-theme>/theme-yazi.toml     │
+│    ~/.config/yazi/omarchy-themes/<new-theme>.toml           │
 └───────────────────────┬─────────────────────────────────────┘
                         │
                         ▼
@@ -117,9 +122,11 @@ The installer includes smart fallback for theme variants:
 | Purpose | Location |
 |---------|----------|
 | Plugin repository | `~/.local/share/omarchy-yazi/` |
-| Theme configs | `~/.config/omarchy/themes/*/theme-yazi.toml` |
+| Theme templates | `~/.local/share/omarchy-yazi/themes/` |
+| Persistent profiles | `~/.config/yazi/omarchy-themes/` |
 | Active theme symlink | `~/.config/yazi/theme.toml` |
 | Hook script | `~/.local/bin/omarchy-yazi-hook` |
+| Generator script | `~/.local/bin/omarchy-yazi-generator` |
 | Hook registration | `~/.config/omarchy/hooks/theme-set` |
 | Yazi cache | `~/.local/state/yazi` |
 
@@ -127,7 +134,7 @@ The installer includes smart fallback for theme variants:
 
 ### Automatic Backup
 
-Before creating the symlink, the hook automatically backs up any existing non-symlinked `theme.toml`:
+Before creating the symlink, the generator automatically backs up any existing non-symlinked `theme.toml`:
 
 ```bash
 ~/.config/yazi/theme.toml.backup.20231104_230145
@@ -139,4 +146,4 @@ The hook clears Yazi's state cache to ensure the new theme is immediately recogn
 
 ### Orphan Cleanup
 
-Old backup files are automatically cleaned up to prevent clutter in your config directory.
+Temporary `theme.toml-*` files are automatically cleaned up to prevent clutter in your config directory.
